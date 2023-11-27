@@ -16,23 +16,34 @@ server_dict = {
     'mini':{
         'dataset': 'mini',
         'dataset_name': 'mini-imagenet',
-        'data_path': '/home/hanlin/FSDatasets/mini-imagenet-480/'
+        #'data_path': '/home/hanlin/FSDatasets/mini-imagenet-480/'
+        'data_path': './datasets/mini_imagenet/'
         },  
     'fs':{
         'dataset': 'fs',
         'dataset_name': 'cifar-fs',
-        'data_path': '/home/hanlin/FSDatasets/cifar-fs-84/'
+        #'data_path': '/home/hanlin/FSDatasets/cifar-fs-84/'
+        'data_path': './datasets/cifar_fs/'
         },
     'fc100':{
         'dataset': 'fc100',
         'dataset_name': 'FC100',
-        'data_path': '/home/hanlin/FSDatasets/FC100-84/'
+        #'data_path': '/home/hanlin/FSDatasets/FC100-84/'
+        'data_path': './datasets/FC100/'
         },
     'tiered':{
         'dataset': 'tiered',
         'dataset_name': 'tiered-imagenet',
-        'data_path': '/home/hanlin/FSDatasets/tiered-imagenet-tools-master/tiered_imagenet-480/'
+        #'data_path': '/home/hanlin/FSDatasets/tiered-imagenet-tools-master/tiered_imagenet-480/'
+        'data_path': './datasets/tiered_imagenet/'
         },
+    'cub':{
+        'dataset': 'cub',
+        'dataset_name': 'cub',
+        #'data_path': '/home/hanlin/FSDatasets/tiered-imagenet-tools-master/tiered_imagenet-480/'
+        'data_path': './datasets/cub/'
+        },
+
 }
 
 def eval_valtest(args):
@@ -57,7 +68,12 @@ def eval_valtest(args):
         std = tuple([x/255.0 for x in [68.20947949,  65.43124043,  70.45866994]])  
         img_size = args.img_size_cifar
         img_resize = args.img_resize_cifar
-        
+    elif: 'cub' in dataset_name:
+        mean = tuple([x / 255.0 for x in [125.3, 123.0, 113.9]])
+        std = tuple([x / 255.0 for x in [63.0, 62.1, 66.7]])
+        img_size = 256
+        img_resize = 224
+
     val_transform = pth_transforms.Compose([
         pth_transforms.Resize(int(img_size), interpolation=3),
         pth_transforms.CenterCrop(int(img_resize)),
@@ -217,7 +233,7 @@ if __name__ == '__main__':
     parser.add_argument('--save', default=1, type=int)
     parser.add_argument('--isfile', default=-1, type=int)
     parser.add_argument('--server', default='mini', type=str,
-                        help='mini / tiered / fs / fc100')
+                        help='mini / tiered / fs / fc100 / cub')
     parser.add_argument('--n',type = int, default=1)
     parser.add_argument('--both',default=1, type=int)
     parser.add_argument('--ckp_path',default='',type=str,
