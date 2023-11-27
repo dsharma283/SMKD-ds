@@ -1,0 +1,35 @@
+How to for CUB dataset
+
+- Download the dataset using the scripts available here:
+	https://github.com/icoz69/DeepEMD/blob/master/datasets/download_cub.sh
+- Enter the cub dataset directory and create "train" "test" and "val" directories
+- Create actual image softlinks as per splits/*.csv files using below script
+	$cd val
+	$ cnt=`cat ../split/val.csv|wc -l`; let "cnt-=1"; for entry in `tail -n ${cnt} ../split/val.csv`; do d_name=`echo $entry|awk -F ',' '{print $2}'`; fname=`echo $entry|awk -F ',' '{print $1}'`; if [ ! -d "$d_name" ]; then echo $d_name; mkdir -p $d_name; fi; cd $d_name ; ln -s ../../$fname ; cd .. ; done
+	$cd train
+	$ cnt=`cat ../split/train.csv|wc -l`; let "cnt-=1"; for entry in `tail -n ${cnt} ../split/train.csv`; do d_name=`echo $entry|awk -F ',' '{print $2}'`; fname=`echo $entry|awk -F ',' '{print $1}'`; if [ ! -d "$d_name" ]; then echo $d_name; mkdir -p $d_name; fi; cd $d_name ; ln -s ../../$fname ; cd .. ; done
+	$cd test
+	$ cnt=`cat ../split/test.csv|wc -l`; let "cnt-=1"; for entry in `tail -n ${cnt} ../split/test.csv`; do d_name=`echo $entry|awk -F ',' '{print $2}'`; fname=`echo $entry|awk -F ',' '{print $1}'`; if [ ! -d "$d_name" ]; then echo $d_name; mkdir -p $d_name; fi; cd $d_name ; ln -s ../../$fname ; cd .. ; done
+
+Your dataset set is ready now.
+
+Training Phase-1
+- Run the command below for phase-1 training
+	- CUDA_VISIBLE_DEVICES=1 python -m torch.distributed.launch --nproc_per_node=1 python main_smkd.py --local_rank=0 --prod_mode False --data_path datasets/cub/train --output_dir output/cub --evaluate_freq 10 --visualization_freq 10 --use_fp16 True --lr 0.0005 --epochs 50 --lambda1 1 --lambda2 0 --lambda3 1 --global_crops_scale 0.4 1 --local_crops_scale 0.05 0.4 --batch_size_per_gpu 8 --image_size 256 256
+
+Training Phase-2
+- Run the command below for phase-2 training
+	- CUDA_VISIBLE_DEVICES=1 python -m torch.distributed.launch --nproc_per_node=1 python main_smkd.py --local_rank=0 --prod_mode False --data_path datasets/cub/train --output_dir output/cub-p2 --evaluate_freq 5 --visualization_freq 5 --use_fp16 True --lr 0.0005 --epochs 50 --lambda1 1 --lambda2 0 --lambda3 1 --global_crops_scale 0.4 1 --local_crops_scale 0.05 0.4 --batch_size_per_gpu 8 --image_size 256 256 --pretrained_path /home/users/deveshs/aml/SMKD-ds/output/cub_voltar_2023-11-26_07-53-16 --pretrained_file checkpoint0050.pth --saveckp_freq 5 --supervised_contrastive
+
+Evaluation Phase-1
+1-shot
+	$ CUDA_VISIBLE_DEVICES=1 python eval_smkd.py --server cub --num_shots 1 --ckp_path /home/users/deveshs/aml/SMKD-ds/output/cub_voltar_2023-11-26_07-53-16 --ckpt_filename checkpoint0050.pth --output_dir ./output/cub-eval-p1 --evaluation_method cosine --iter_num 10000
+5-shot
+	$ CUDA_VISIBLE_DEVICES=1 python eval_smkd.py --server cub --num_shots 5 --ckp_path /home/users/deveshs/aml/SMKD-ds/output/cub_voltar_2023-11-26_07-53-16 --ckpt_filename checkpoint0050.pth --output_dir ./output/cub-eval-p1 --evaluation_method cosine --iter_num 10000
+
+Evaluation Phase-2
+1-shot
+	$ CUDA_VISIBLE_DEVICES=1 python eval_smkd.py --server cub --num_shots 1 --ckp_path /home/users/deveshs/aml/SMKD-ds/output/cub-p2_voltar_2023-11-26_21-49-28 --ckpt_filename checkpoint0010.pth --output_dir ./output/cub-eval-p2-t0010 --evaluation_method cosine --iter_num 10000
+5-shot
+	$ CUDA_VISIBLE_DEVICES=1 python eval_smkd.py --server cub --num_shots 5 --ckp_path /home/users/deveshs/aml/SMKD-ds/output/cub-p2_voltar_2023-11-26_21-49-28 --ckpt_filename checkpoint0010.pth --output_dir ./output/cub-eval-p2-t0010 --evaluation_method cosine --iter_num 10000
+
