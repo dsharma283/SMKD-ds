@@ -61,6 +61,15 @@ def feature_evaluation_cos(cl_data_file, n_way=5, n_support=5, n_query=15, adapt
     for cl in select_class:
         img_feat = cl_data_file[cl]
         perm_ids = np.random.permutation(len(img_feat)).tolist()
+        '''
+        print(f'cl = {cl}, img_feat_len = {len(img_feat)}, perm_ids_len = {len(perm_ids)}')
+        print(perm_ids, len(perm_ids), f'{n_support + n_query}')
+        for i in range(n_support + n_query):
+            print(i, f'{n_support + n_query}')
+            pids = perm_ids[i]
+            imf = img_feat[pids]
+            imf = np.squeeze(imf)
+        '''
         z_all.append([np.squeeze(img_feat[perm_ids[i]]) for i in range(n_support + n_query)])  # stack each batch
 
     z_all = torch.from_numpy(np.array(z_all))
@@ -178,7 +187,8 @@ def test_methods(args,server,epoch,pretrained_weights,file=None, top_k = 5, loss
     torch.cuda.manual_seed_all(args.seed)
     random.seed(args.seed)
 
-    n_query = 600 - args.num_shots
+    #n_query = 600 - args.num_shots
+    n_query = 20 - args.num_shots
     few_shot_params = dict(n_way=args.num_ways, n_support=args.num_shots)
 
     file_path = os.path.join(pretrained_weights,'{}_224_{}_{}.hdf5'.format(args.partition,epoch, args.checkpoint_key))

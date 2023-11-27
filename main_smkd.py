@@ -233,6 +233,7 @@ def train_smkd(args):
     cudnn.benchmark = True
 
     # ============ set up wandb ... ==============
+    wandb = None
     if args.prod_mode:
         exp_name = args.output_dir.split("/")[-1]
         import wandb
@@ -331,7 +332,7 @@ def train_smkd(args):
     print(f"Student and Teacher are built: they are both {args.arch} network.")
 
     # ============ preparing loss ... ===========
-    num_train_classes = {'mini-imagenet-480': 64, 'cifar-fs': 64, 'cifar-fs-84': 64}
+    num_train_classes = {'mini-imagenet-480': 64, 'cifar-fs': 64, 'cifar-fs-84': 64, 'cub': 100}
     
     # supervised loss
     if args.supervised_loss == True:

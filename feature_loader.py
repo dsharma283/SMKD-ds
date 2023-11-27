@@ -25,14 +25,17 @@ def init_loader(filename):
 
     feats = fileset.all_feats_dset
     labels = fileset.all_labels
+    #print(f'{type(feats)}, fet_len={len(feats)}, lab_len={len(labels)}')
     while np.sum(feats[-1]) == 0:
         feats  = np.delete(feats,-1,axis = 0)
         labels = np.delete(labels,-1,axis = 0)
     class_list = np.unique(np.array(labels)).tolist()
+    #print(f'{type(feats)}, fet_len={len(feats)}, lab_len={len(labels)}, class_list = {len(class_list)}')
     inds = range(len(labels))
     cl_data_file = {}
     for cl in class_list:
         cl_data_file[cl] = []
     for ind in inds:
         cl_data_file[labels[ind]].append( feats[ind])
+    #print(f'cl_data_file = {len(cl_data_file)}')
     return cl_data_file

@@ -834,9 +834,13 @@ class DataAugmentationSMKD(object):
             std = tuple([0.229, 0.224, 0.225])
         elif 'cifar' in dataset_name or 'FC100' in dataset_name:
             mean = tuple([x/255.0 for x in [129.37731888,  124.10583864, 112.47758569]])
-            std = tuple([x/255.0 for x in [68.20947949,  65.43124043,  70.45866994]])  
+            std = tuple([x/255.0 for x in [68.20947949,  65.43124043,  70.45866994]]) 
+        elif 'cub' in dataset_name:
+            mean = tuple([x / 255.0 for x in [125.3, 123.0, 113.9]])
+            std = tuple([x / 255.0 for x in [63.0, 62.1, 66.7]])
        
         normalize = transforms.Compose([
+            transforms.Resize(256),
             transforms.ToTensor(),
             transforms.Normalize(mean, std),
         ])
@@ -899,7 +903,12 @@ def evaluation(args, vits, epoch, rollout=False, foreground_threshold = 0.4, eva
         mean = tuple([x/255.0 for x in [129.37731888,  124.10583864, 112.47758569]])
         std = tuple([x/255.0 for x in [68.20947949,  65.43124043,  70.45866994]])  
         img_size = img_size_cifar 
-        img_resize = img_resize_cifar    
+        img_resize = img_resize_cifar
+    elif 'cub'in dataset_name:
+        mean = tuple([x / 255.0 for x in [125.3, 123.0, 113.9]])
+        std = tuple([x / 255.0 for x in [63.0, 62.1, 66.7]])
+        img_size = 256
+        img_resize = 224
     # ============ preparing data ... ============
     val_transform = transforms.Compose([
         transforms.Resize(img_size, interpolation=3),
@@ -930,7 +939,7 @@ def evaluation(args, vits, epoch, rollout=False, foreground_threshold = 0.4, eva
     
     args.evaluate_output_dir =  os.path.dirname(evaluate_ckpt_path)
 
-    server = {'dataset': 'mini',
+    server = {'dataset': 'cub',
               'data_path': evaluate_data_path,   # Need to modify here
               'ckp_path': evaluate_ckpt_path}
 
@@ -1113,6 +1122,9 @@ def visualize(args, vits, epoch, image_path = None, image_size = (480, 480), thr
     elif 'cifar' in dataset_name or 'FC100' in dataset_name:
         mean = tuple([x/255.0 for x in [129.37731888,  124.10583864, 112.47758569]])
         std = tuple([x/255.0 for x in [68.20947949,  65.43124043,  70.45866994]])  
+    elif 'cub'in dataset_name:
+        mean = tuple([x / 255.0 for x in [125.3, 123.0, 113.9]])
+        std = tuple([x / 255.0 for x in [63.0, 62.1, 66.7]])
    
     transform = transforms.Compose([
         transforms.Resize(args.image_size),
